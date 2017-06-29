@@ -15,7 +15,6 @@ import idautils
 import idc
 import sark.ui
 
-
 from DIE.Lib.IDAConnector import *
 import DIE.Lib.DieConfig
 import DIE.Lib.DIEDb
@@ -33,11 +32,12 @@ from DIE.UI.AboutScreen import AboutWindow
 
 from DIE.Lib.DIE_Exceptions import DbFileMismatch
 
+
 class MenuHelperException(Exception):
     pass
 
 
-class DieManager():
+class DieManager(object):
     """
     Manage the DIE framework
     """
@@ -46,19 +46,22 @@ class DieManager():
 
         ### Logging ###
 
-        log_filename = os.path.join(os.getcwd(), "DIE.log")
+        # idb dir is guaranteed to be writable by the current user
+        idb_location = idautils.GetIdbDir()
+
+        log_filename = os.path.join(idb_location, "DIE.log")
 
         self._menu = sark.qt.MenuManager()
 
-        #TODO: Fix logging to include rotating_file_handler \ console_logging
+        # TODO: Fix logging to include rotating_file_handler \ console_logging
         if is_dbg_log:
             logging.basicConfig(filename=log_filename,
-                        level=logging.DEBUG,
-                        format='[%(asctime)s] [%(levelname)s] [%(name)s][%(filename)s:%(lineno)s] : %(message)s')
+                                level=logging.DEBUG,
+                                format='[%(asctime)s] [%(levelname)s] [%(name)s][%(filename)s:%(lineno)s] : %(message)s')
         else:
-             logging.basicConfig(filename=log_filename,
-                    level=logging.INFO,
-                    format='[%(asctime)s] [%(levelname)s] [%(name)s][%(filename)s:%(lineno)s] : %(message)s')
+            logging.basicConfig(filename=log_filename,
+                                level=logging.INFO,
+                                format='[%(asctime)s] [%(levelname)s] [%(name)s][%(filename)s:%(lineno)s] : %(message)s')
 
         idaapi.msg("Logfile created at %s\n" % log_filename)
         self.logger = logging.getLogger(__name__)
@@ -72,12 +75,7 @@ class DieManager():
         except IOError:
             pass
 
-        except:
-            import traceback
-            idaapi.msg(traceback.format_exc())
-
         self.die_config = config
-
 
         self.addmenu_item_ctxs = []
         self.icon_list = {}
@@ -138,7 +136,6 @@ class DieManager():
         self.load_icon("plugins.png", "plugins")
         self.load_icon("save.png", "save")
         self.load_icon("load.png", "load")
-
 
     ###########################################################################
     # Menu Items
@@ -260,7 +257,6 @@ class DieManager():
         except Exception as ex:
             logging.exception("Error while loading DB: %s", ex)
             return False
-
 
     ###########################################################################
     # Function View
@@ -389,7 +385,7 @@ class die_plugin_t(plugin_t):
     def init(self):
         try:
             # For Debugging:
-            #self.die_manager = DieManager(is_dbg_log=True, is_dbg_pause=False, is_dbg_profile=True)
+            # self.die_manager = DieManager(is_dbg_log=True, is_dbg_pause=False, is_dbg_profile=True)
             self.die_manager = DieManager()
             self.die_manager.add_menu_items()
             self.die_manager.show_logo()
@@ -417,9 +413,3 @@ class die_plugin_t(plugin_t):
 
 def PLUGIN_ENTRY():
     return die_plugin_t()
-
-
-
-
-
-
